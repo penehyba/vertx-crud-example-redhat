@@ -28,7 +28,10 @@
   <description>Vertx - CRUD</description>
 
   <properties>
-    <vertx.version>4.0.3.redhat-00002</vertx.version>
+    <vertx.version>4.1.0.redhat-00004</vertx.version>
+    <release.candidate.repository>
+      http://indy.psi.redhat.com/api/content/maven/group/static
+    </release.candidate.repository>
     <slf4j.version>1.7.30</slf4j.version>
     <agroal.version>1.9.0.redhat-00001</agroal.version>
     <vertx-maven-plugin.version>1.0.24</vertx-maven-plugin.version>
@@ -39,6 +42,7 @@
 
     <maven.compiler.source>1.8</maven.compiler.source>
     <maven.compiler.target>1.8</maven.compiler.target>
+    <postgresql.version>42.2.18.redhat-00001</postgresql.version>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
     <jkube.generator.from>registry.access.redhat.com/ubi8/openjdk-11</jkube.generator.from>
@@ -77,12 +81,6 @@
     <dependency>
       <groupId>io.vertx</groupId>
       <artifactId>vertx-rx-java</artifactId>
-    </dependency>
-
-    <dependency>
-      <groupId>org.postgresql</groupId>
-      <artifactId>postgresql</artifactId>
-      <version>42.2.21</version>
     </dependency>
 
     <dependency>
@@ -181,9 +179,13 @@
   <profiles>
     <profile>
       <id>openshift</id>
-      <properties>
-        <test.to.exclude/>
-      </properties>
+      <dependencies>
+        <dependency>
+          <groupId>org.postgresql</groupId>
+          <artifactId>postgresql</artifactId>
+          <version>${postgresql.version}</version>
+        </dependency>
+      </dependencies>
       <build>
         <plugins>
           <plugin>
@@ -261,6 +263,27 @@
       <build>
         <plugins>
           <plugin>
+            <groupId>org.eclipse.jkube</groupId>
+            <artifactId>openshift-maven-plugin</artifactId>
+            <version>${jkube.version}</version>
+            <executions>
+              <execution>
+                <goals>
+                  <goal>resource</goal>
+                </goals>
+              </execution>
+            </executions>
+            <configuration>
+              <enricher>
+                <config>
+                  <jkube-healthcheck-thorntail-v2>
+                    <path>/health</path>
+                  </jkube-healthcheck-thorntail-v2>
+                </config>
+              </enricher>
+            </configuration>
+          </plugin>
+          <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-failsafe-plugin</artifactId>
             <version>2.22.2</version>
@@ -295,6 +318,19 @@
       <name>Red Hat Early Access Repository</name>
       <url>https://maven.repository.redhat.com/earlyaccess/all/</url>
     </repository>
+    <repository>
+      <id>redhat-build</id>
+      <name>Red Hat builds Repository</name>
+      <url>${release.candidate.repository}</url>
+      <layout>default</layout>
+      <releases>
+        <enabled>true</enabled>
+        <updatePolicy>never</updatePolicy>
+      </releases>
+      <snapshots>
+        <enabled>false</enabled>
+      </snapshots>
+    </repository>
   </repositories>
 
   <pluginRepositories>
@@ -307,6 +343,19 @@
       <id>redhat-early-access</id>
       <name>Red Hat Early Access Repository</name>
       <url>https://maven.repository.redhat.com/earlyaccess/all/</url>
+    </pluginRepository>
+    <pluginRepository>
+      <id>redhat-build</id>
+      <name>Red Hat builds Repository</name>
+      <url>${release.candidate.repository}</url>
+      <layout>default</layout>
+      <releases>
+        <enabled>true</enabled>
+        <updatePolicy>never</updatePolicy>
+      </releases>
+      <snapshots>
+        <enabled>false</enabled>
+      </snapshots>
     </pluginRepository>
   </pluginRepositories>
 </project>
